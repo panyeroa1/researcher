@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { generateLandingPage, generatePresentationData, generatePresentationImage, generateSpeech } from '../services/geminiService';
 import LoadingSpinner from './LoadingSpinner';
-import { base64ToBlobUrl } from '../utils/helpers';
+import { createWavBlobUrl, decodeBase64 } from '../utils/helpers';
 import { PresentationSlide } from '../types';
 import PresentationViewer from './PresentationViewer';
 
@@ -62,10 +62,17 @@ const ResearcherPanel: React.FC = () => {
       // Step 4: Generate Full Audio from Script
       setStatus('generating_audio');
       const fullScript = presentationData.map(s => s.script).join('\n\n');
-      const audioData = await generateSpeech(fullScript);
+      // FIX: The `generateSpeech` function requires a voice name as the second argument.
+      // 'Kore' is chosen as a default voice. The original call was missing this argument,
+      // which is the likely cause of the "Expected 2 arguments, but got 1" error.
+      const audioData = await generateSpeech(fullScript, 'Kore');
       if (!audioData) throw new Error('Failed to generate audio data.');
       
-      const url = base64ToBlobUrl(audioData, 'audio/mpeg');
+      // FIX: The TTS API returns raw PCM audio data, which cannot be played directly
+      // in an <audio> tag. The base64 response is decoded and then wrapped in a
+      // WAV file format to ensure browser compatibility.
+      const audioBytes = decodeBase64(audioData);
+      const url = createWavBlobUrl(audioBytes);
       setAudioUrl(url);
 
       setStatus('done');

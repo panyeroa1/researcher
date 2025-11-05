@@ -57,7 +57,9 @@ const ThemeSwitcher: React.FC = () => {
     const root = document.documentElement;
     const colors = ACCENT_COLORS[accent];
     Object.entries(colors).forEach(([property, value]) => {
-      root.style.setProperty(property, value);
+      // FIX: Explicitly cast `value` to string. This resolves an issue where the TypeScript compiler
+      // incorrectly infers the type of `value` as `unknown` in some environments.
+      root.style.setProperty(property, value as string);
     });
     localStorage.setItem('accentColor', accent);
   }, [accent]);

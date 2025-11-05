@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import ResearcherPanel from './components/ResearcherPanel';
 import ImageAnalyzer from './components/ImageAnalyzer';
+import AudioTranscriber from './components/AudioTranscriber';
 import VideoAnalyzer from './components/VideoAnalyzer';
 import QuickAnswer from './components/QuickAnswer';
 import TextToSpeech from './components/TextToSpeech';
@@ -17,6 +18,8 @@ const App: React.FC = () => {
         return <ResearcherPanel />;
       case AppMode.IMAGE_ANALYZER:
         return <ImageAnalyzer />;
+      case AppMode.AUDIO_TRANSCRIBER:
+        return <AudioTranscriber />;
       case AppMode.VIDEO_ANALYZER:
         return <VideoAnalyzer />;
       case AppMode.QUICK_ANSWER:

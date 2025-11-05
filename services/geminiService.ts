@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { PITCH_SYSTEM_PROMPT } from '../constants';
 import { PresentationSlideData } from "../types";
@@ -100,6 +101,33 @@ export const analyzeImage = async (imageData: string, mimeType: string, prompt: 
     }
 };
 
+export const transcribeAudio = async (audioData: string, mimeType: string): Promise<string> => {
+    try {
+        const audioPart = {
+            inlineData: {
+                data: audioData,
+                mimeType,
+            },
+        };
+        const textPart = { text: `You are an expert audio transcriber. Your task is to transcribe the provided audio with extremely high accuracy.
+Follow these instructions precisely:
+1.  **Full Transcription**: Transcribe the entire audio from beginning to end. Do not summarize or omit any parts.
+2.  **Speaker Diarization**: If there are multiple speakers, identify and label each one consistently (e.g., "Speaker 1:", "Speaker 2:").
+3.  **Capture Tone and Style**: Go beyond just words. Preserve the original tone, style, and emotional nuance of the speakers. For example, use punctuation and formatting to reflect pauses, emphasis, or changes in emotion (e.g., excitement, hesitation). The final text should read as if it were spoken by the original speakers.
+4.  **Verbatim Accuracy**: Capture every word, including filler words (uh, um), false starts, and stutters, as they are crucial to the natural flow of conversation.
+5.  **Formatting**: Present the transcription in a clean, readable script format.` };
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: { parts: [textPart, audioPart] },
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error transcribing audio:", error);
+        return "Failed to transcribe audio. Please ensure the audio format is supported and check the console for details.";
+    }
+};
+
 export const analyzeVideoFrames = async (frames: string[], prompt: string): Promise<string> => {
     try {
         const parts = [
@@ -137,16 +165,16 @@ export const getQuickAnswer = async (prompt: string): Promise<string> => {
     }
 };
 
-export const generateSpeech = async (text: string): Promise<string | null> => {
+export const generateSpeech = async (text: string, voiceName: string): Promise<string | null> => {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
-            contents: [{ parts: [{ text: `Please narrate the following script in an engaging and professional tone: ${text}` }] }],
+            contents: [{ parts: [{ text: `<speak>${text}</speak>` }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        prebuiltVoiceConfig: { voiceName: voiceName },
                     },
                 },
             },

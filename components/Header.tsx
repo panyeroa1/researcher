@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { AppMode } from '../types';
-import { PresentationIcon, ImageIcon, VideoIcon, LightningIcon, SpeakerIcon } from './common/Icons';
+import { PresentationIcon, ImageIcon, VideoIcon, LightningIcon, SpeakerIcon, MicIcon } from './common/Icons';
 import ThemeSwitcher from './ThemeSwitcher';
 
 interface HeaderProps {
@@ -56,6 +57,13 @@ const Header: React.FC<HeaderProps> = ({ currentMode, setMode }) => {
                 setMode={setMode}
                 icon={<ImageIcon className="w-5 h-5" />}
                 label="Image"
+              />
+              <NavButton
+                mode={AppMode.AUDIO_TRANSCRIBER}
+                currentMode={currentMode}
+                setMode={setMode}
+                icon={<MicIcon className="w-5 h-5" />}
+                label="Audio"
               />
               <NavButton
                 mode={AppMode.VIDEO_ANALYZER}
