@@ -1,0 +1,8 @@
+{
+  "name": "Galileo",
+  "description": "An advanced research and creation tool powered by Gemini. Features include deep analysis with thinking mode, text-to-speech, quick answers, and multi-modal understanding.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

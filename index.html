@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF--8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galileo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --color-brand-primary: #0D47A1;
+        --color-brand-secondary: #1565C0;
+        --color-brand-light: #1E88E5;
+        --color-accent: #FFC107;
+      }
+    </style>
+    <script>
+      // Initialize theme from localStorage to prevent FOUC (Flash of Unstyled Content)
+      (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        const accentColor = localStorage.getItem('accentColor') || 'blue';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+        document.documentElement.setAttribute('data-accent', accentColor);
+      })();
+    </script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': 'var(--color-brand-primary)',
+              'brand-secondary': 'var(--color-brand-secondary)',
+              'brand-light': 'var(--color-brand-light)',
+              'accent': 'var(--color-accent)',
+              'light-bg': '#F5F7FA',
+              'dark-bg': '#111827',
+              'dark-card': '#1f2937',
+              'dark-text': '#d1d5db',
+              'light-text': '#1f2937',
+            },
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
