@@ -17,3 +17,15 @@ export interface PresentationSlideData {
 export interface PresentationSlide extends PresentationSlideData {
   imageUrl: string | null;
 }
+
+export enum TranscriptionFormat {
+  TEXT = 'txt',
+  SRT = 'srt',
+  VTT = 'vtt',
+}
+
+export interface MusicTrack {
+  id: string;
+  name: string;
+  url: string;
+}

@@ -1,3 +1,5 @@
+import { MusicTrack } from "./types";
+
 export const PITCH_SYSTEM_PROMPT = `
 You are **Galileo**, a world-class business and technology consultant. Your expertise lies in distilling complex ideas into compelling, investor-ready presentations.
 
@@ -18,3 +20,9 @@ Each slide object MUST have the following three properties:
 -   **Image Prompts**: Be creative and specific. Avoid generic prompts. Think about lighting, style (e.g., photorealistic, cinematic), and composition.
 -   **JSON Validity**: Ensure the final output is a perfectly valid JSON array and nothing else.
 `;
+
+export const BACKGROUND_MUSIC_TRACKS: MusicTrack[] = [
+    { id: 'morning-garden', name: 'Morning Garden (Acoustic)', url: 'https://cdn.pixabay.com/audio/2022/10/25/audio_2322c0266e.mp3' },
+    { id: 'ambient-corporate', name: 'Ambient Corporate (Inspiring)', url: 'https://cdn.pixabay.com/audio/2024/05/13/audio_111b64b627.mp3' },
+    { id: 'lofi-study', name: 'Lofi Study (Chillhop)', url: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf038.mp3' },
+];

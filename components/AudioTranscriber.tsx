@@ -4,6 +4,7 @@ import { transcribeAudio } from '../services/geminiService';
 import { fileToBase64 } from '../utils/helpers';
 import LoadingSpinner from './LoadingSpinner';
 import { UploadIcon, CopyIcon, DownloadIcon } from './common/Icons';
+import { TranscriptionFormat } from '../types';
 
 const AudioTranscriber: React.FC = () => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -12,6 +13,7 @@ const AudioTranscriber: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [format, setFormat] = useState<TranscriptionFormat>(TranscriptionFormat.TEXT);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -35,7 +37,7 @@ const AudioTranscriber: React.FC = () => {
 
     try {
       const base64Audio = await fileToBase64(audioFile);
-      const result = await transcribeAudio(base64Audio, audioFile.type);
+      const result = await transcribeAudio(base64Audio, audioFile.type, format);
       setTranscription(result);
     } catch (err) {
       setError('Failed to transcribe the audio.');
@@ -69,7 +71,7 @@ const AudioTranscriber: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'transcription.txt';
+      link.download = `transcription.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -97,7 +99,7 @@ const AudioTranscriber: React.FC = () => {
   return (
     <div className="bg-white dark:bg-dark-card shadow-lg rounded-xl p-6">
       <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-light mb-2">Audio Transcription</h2>
-      <p className="text-gray-600 dark:text-gray-300 mb-6">Upload an audio file and get a detailed transcription, with multiple speakers identified.</p>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">Upload an audio file and get a detailed transcription in your chosen format, with multiple speakers identified.</p>
       
       <div className="space-y-6">
         <div>
@@ -109,15 +111,34 @@ const AudioTranscriber: React.FC = () => {
             </div>
           ) : <AudioUploadArea />}
         </div>
-
+        
         {audioFile && (
-            <button
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isLoading ? 'Transcribing...' : 'Transcribe Audio'}
-            </button>
+            <div className='space-y-4'>
+                <div>
+                    <label htmlFor="format-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        2. Select Output Format:
+                    </label>
+                    <select
+                        id="format-select"
+                        value={format}
+                        onChange={(e) => setFormat(e.target.value as TranscriptionFormat)}
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-brand-light outline-none transition duration-200"
+                        disabled={isLoading}
+                    >
+                        <option value={TranscriptionFormat.TEXT}>Plain Text (.txt)</option>
+                        <option value={TranscriptionFormat.SRT}>SRT Subtitles (.srt)</option>
+                        <option value={TranscriptionFormat.VTT}>VTT Subtitles (.vtt)</option>
+                    </select>
+                </div>
+
+                <button
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? 'Transcribing...' : 'Transcribe Audio'}
+                </button>
+            </div>
         )}
       </div>
 

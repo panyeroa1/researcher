@@ -92,3 +92,64 @@ export const createWavBlobUrl = (pcmData: Uint8Array): string => {
   const blob = new Blob([view], { type: 'audio/wav' });
   return URL.createObjectURL(blob);
 };
+
+export const audioBufferToPcmBytes = (buffer: AudioBuffer): Uint8Array => {
+    const numChannels = buffer.numberOfChannels;
+    const length = buffer.length * numChannels * 2; // 2 bytes per sample (16-bit)
+    const result = new Uint8Array(length);
+    const view = new DataView(result.buffer);
+    const channels = [];
+    for(let i = 0; i < numChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+    }
+    
+    let offset = 0;
+    for (let i = 0; i < buffer.length; i++) {
+        for (let channel = 0; channel < numChannels; channel++) {
+            const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+            // 16-bit PCM
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            offset += 2;
+        }
+    }
+    return result;
+};
+
+export const mixAudio = async (speechPcm: Uint8Array, musicUrl: string, musicVolume: number): Promise<AudioBuffer> => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    try {
+        const speechBuffer = await decodeAudioData(speechPcm, audioContext);
+        
+        const response = await fetch(musicUrl);
+        const musicArrayBuffer = await response.arrayBuffer();
+        const musicBuffer = await audioContext.decodeAudioData(musicArrayBuffer);
+
+        const offlineContext = new OfflineAudioContext(
+            speechBuffer.numberOfChannels,
+            speechBuffer.length,
+            speechBuffer.sampleRate
+        );
+
+        const speechSource = offlineContext.createBufferSource();
+        speechSource.buffer = speechBuffer;
+
+        const musicSource = offlineContext.createBufferSource();
+        musicSource.buffer = musicBuffer;
+        musicSource.loop = true;
+
+        const musicGain = offlineContext.createGain();
+        musicGain.gain.setValueAtTime(musicVolume, 0);
+
+        speechSource.connect(offlineContext.destination);
+        musicSource.connect(musicGain);
+        musicGain.connect(offlineContext.destination);
+        
+        speechSource.start(0);
+        musicSource.start(0);
+
+        return await offlineContext.startRendering();
+    } finally {
+        await audioContext.close();
+    }
+};

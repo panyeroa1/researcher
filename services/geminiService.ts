@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { PITCH_SYSTEM_PROMPT } from '../constants';
-import { PresentationSlideData } from "../types";
+import { PresentationSlideData, TranscriptionFormat } from "../types";
 
 const API_KEY = process.env.API_KEY;
 
@@ -101,7 +101,7 @@ export const analyzeImage = async (imageData: string, mimeType: string, prompt: 
     }
 };
 
-export const transcribeAudio = async (audioData: string, mimeType: string): Promise<string> => {
+export const transcribeAudio = async (audioData: string, mimeType: string, format: TranscriptionFormat): Promise<string> => {
     try {
         const audioPart = {
             inlineData: {
@@ -109,13 +109,37 @@ export const transcribeAudio = async (audioData: string, mimeType: string): Prom
                 mimeType,
             },
         };
+
+        let formatInstructions = '';
+        switch (format) {
+            case TranscriptionFormat.SRT:
+                formatInstructions = `
+                **Output Format**: Generate the transcription in SRT (SubRip Subtitle) format.
+                - Each entry must have a sequence number (1, 2, 3, ...).
+                - Timestamps must be in the format \`HH:MM:SS,mmm --> HH:MM:SS,mmm\`.
+                - Provide accurate timestamps based on the audio content.`;
+                break;
+            case TranscriptionFormat.VTT:
+                formatInstructions = `
+                **Output Format**: Generate the transcription in WebVTT (VTT) format.
+                - The file must start with "WEBVTT".
+                - Timestamps must be in the format \`HH:MM:SS.mmm --> HH:MM:SS.mmm\`.
+                - Provide accurate timestamps based on the audio content.`;
+                break;
+            case TranscriptionFormat.TEXT:
+            default:
+                formatInstructions = `
+                **Output Format**: Present the transcription in a clean, readable script format.`;
+                break;
+        }
+
         const textPart = { text: `You are an expert audio transcriber. Your task is to transcribe the provided audio with extremely high accuracy.
 Follow these instructions precisely:
 1.  **Full Transcription**: Transcribe the entire audio from beginning to end. Do not summarize or omit any parts.
 2.  **Speaker Diarization**: If there are multiple speakers, identify and label each one consistently (e.g., "Speaker 1:", "Speaker 2:").
 3.  **Capture Tone and Style**: Go beyond just words. Preserve the original tone, style, and emotional nuance of the speakers. For example, use punctuation and formatting to reflect pauses, emphasis, or changes in emotion (e.g., excitement, hesitation). The final text should read as if it were spoken by the original speakers.
 4.  **Verbatim Accuracy**: Capture every word, including filler words (uh, um), false starts, and stutters, as they are crucial to the natural flow of conversation.
-5.  **Formatting**: Present the transcription in a clean, readable script format.` };
+5. ${formatInstructions}` };
         
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-pro',
